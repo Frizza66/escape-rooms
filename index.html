@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Rooms - Prof.ssa Angela Frizzarin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ededed;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #192330;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .prof-name {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .escape-card {
+            background-color: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .escape-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .escape-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #192330;
+            margin-bottom: 10px;
+        }
+        .escape-subtitle {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .play-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .play-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Escape Rooms Didattiche</h1>
+        <p class="prof-name">prof.ssa Angela Frizzarin</p>
+
+        <div class="escape-card">
+            <div class="escape-title">🎺 La cornetta perduta di Buddy Bolden</div>
+            <div class="escape-subtitle">Escape room sulla nascita del jazz (musica)</div>
+            <a href="buddy-bolden.html" class="play-button">Gioca ora →</a>
+        </div>
+
+        <div class="escape-card">
+            <div class="escape-title">📜 Il testamento di Ettore Valdi</div>
+            <div class="escape-subtitle">Escape room sul Risorgimento (storia)</div>
+            <a href="ettore-valdi.html" class="play-button">Gioca ora →</a>
+        </div>
+
+        <div class="escape-card">
+            <div class="escape-title">🏰 Il sigillo di stupor mundi</div>
+            <div class="escape-subtitle">Escape room su Federico II di Svevia (storia)</div>
+            <a href="stupor-mundi.html" class="play-button">Gioca ora →</a>
+        </div>
+    </div>
+</body>
+</html>
