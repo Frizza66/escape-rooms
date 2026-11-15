@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Il Mistero del 1685 — Escape Room Bach & Handel</title>
+<style>
+  :root{
+    --bg:#0b0a0f; --bg2:#15121c; --gold:#d4af37; --gold2:#f0d98c;
+    --ink:#e8e2d0; --dim:#9a917c; --red:#b3402f; --green:#3f8f5a;
+    --panel:#1c1824; --border:#3a3244;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:'Georgia','Times New Roman',serif; color:var(--ink);
+    background:radial-gradient(circle at 50% 0%, #1a1522 0%, var(--bg) 60%);
+    min-height:100vh;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 18px; border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#1a1522,#0f0c15);
+    position:sticky; top:0; z-index:50;
+  }
+  header h1{font-size:1.05rem; margin:0; letter-spacing:1px; color:var(--gold2); font-weight:normal}
+  .timer{font-family:'Courier New',monospace; font-size:1.2rem; color:var(--gold); letter-spacing:2px}
+  .timer.warn{color:#e05a3a; animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.5}}
+  .btn{
+    background:linear-gradient(180deg,#2a2334,#1a1522); color:var(--gold2);
+    border:1px solid var(--gold); border-radius:6px; padding:8px 14px;
+    font-family:inherit; cursor:pointer; letter-spacing:.5px; transition:.2s;
+  }
+  .btn:hover{background:linear-gradient(180deg,#3a3048,#241d30); box-shadow:0 0 12px rgba(212,175,55,.35)}
+  .btn:disabled{opacity:.35; cursor:not-allowed; box-shadow:none}
+  .btn.small{padding:5px 10px; font-size:.85rem}
+  main{max-width:1100px; margin:0 auto; padding:18px}
+  .card{
+    background:linear-gradient(180deg,var(--panel),#120f18);
+    border:1px solid var(--border); border-radius:12px; padding:18px;
+    margin-bottom:18px; box-shadow:0 8px 30px rgba(0,0,0,.5);
+  }
+  .card h2{margin:0 0 6px; color:var(--gold2); font-weight:normal; letter-spacing:1px}
+  .card p{line-height:1.6; color:var(--ink)}
+  .dim{color:var(--dim); font-size:.9rem}
+  .imgbox{
+    width:100%; aspect-ratio:16/9; border:1px dashed var(--gold);
+    border-radius:10px; display:flex; align-items:center; justify-content:center;
+    background:#0d0b12; color:var(--dim); text-align:center; padding:10px;
+    overflow:hidden; margin:10px 0;
+  }
+  .imgbox img{width:100%; height:100%; object-fit:cover; border-radius:8px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px}
+  input[type=text], input[type=number], select{
+    background:#0d0b12; border:1px solid var(--border); color:var(--gold2);
+    padding:10px; border-radius:6px; font-family:'Courier New',monospace;
+    font-size:1.1rem; letter-spacing:3px; text-transform:uppercase; width:100%;
+  }
+  .row{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+  .row input{flex:1; min-width:120px}
+  .frag{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .frag span{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:52px; height:52px; border:1px solid var(--gold); border-radius:8px;
+    font-size:1.5rem; color:var(--gold); background:#0d0b12;
+  }
+  .frag span.locked{opacity:.25; border-style:dashed}
+  .msg{min-height:1.2em; margin-top:8px; font-size:.95rem}
+  .msg.ok{color:var(--green)} .msg.ko{color:var(--red)}
+  .hidden{display:none !important;}
+  .tappa{opacity:.4; pointer-events:none; filter:grayscale(.6)}
+  .tappa.attiva{opacity:1; pointer-events:auto; filter:none}
+  .pill{display:inline-block; background:#241d30; border:1px solid var(--border);
+    padding:2px 10px; border-radius:20px; font-size:.8rem; color:var(--dim); margin-right:6px}
+  .keys{display:grid; grid-template-columns:repeat(8,1fr); gap:6px; max-width:420px; margin-top:10px}
+  .keys button{
+    aspect-ratio:1.4/1; background:linear-gradient(180deg,#efe6cf,#cfc4a8);
+    color:#1a1522; border:1px solid #000; border-radius:4px; cursor:pointer;
+    font-family:'Courier New',monospace; font-weight:bold; font-size: 1.1rem;
+  }
+  .keys button.on{background:linear-gradient(180deg,#d4af37,#a8871f); color:#0b0a0f}
+  .seq{font-family:'Courier New',monospace; font-size:1.3rem; letter-spacing:6px;
+    color:var(--gold); margin-top:8px; min-height:1.3em}
+  .bar{height:6px; background:#241d30; border-radius:3px; overflow:hidden; margin:12px 0}
+  .bar > div{height:100%; width:0; background:linear-gradient(90deg,#b3402f,#d4af37); transition:.5s}
+  .solutions{background:#0d0b12; border-left:3px solid var(--gold); padding:14px;
+    border-radius:6px; margin-top:10px; color:var(--ink)}
+  .solutions h3{margin:0 0 6px; color:var(--gold2); font-weight:normal}
+  .solutions li{margin-bottom:6px; line-height:1.5}
+  .locked-overlay{
+    position:fixed; inset:0; background:rgba(5,4,8,.92); z-index:100;
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:20px;
+  }
+  .locked-overlay .card{max-width:520px}
+  .center{text-align:center}
+  footer{padding:18px; text-align:center; color:var(--dim); font-size:.8rem}
+  @media(max-width:600px){header h1{display:none} .keys{grid-template-columns:repeat(4,1fr)}}
+  
+  /* Stile per le tessere da smistare */
+  .tessera{display:inline-block; padding:8px 12px; margin:5px; background:#1a1522; border:1px solid var(--gold); border-radius:6px; cursor:pointer; color:var(--gold2); transition:.2s;}
+  .tessera:hover{background:#2a2334;}
+  .bin{border:2px dashed var(--border); min-height:80px; padding:10px; border-radius:8px; margin-top:10px;}
+  .bin.over{border-color:var(--gold); background:#1a1522;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🕯️ IL MISTERO DEL 1685 — L'ACCORDO PERDUTO</h1>
+  <div style="display:flex; gap:10px; align-items:center">
+    <div class="timer" id="timer">60:00</div>
+    <button class="btn small" id="btnStart">▶ Avvia</button>
+    <button class="btn small" id="btnPause" disabled>⏸ Pausa</button>
+    <button class="btn small" id="btnTeacher">🎓 Docente</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SCHERMATA INIZIALE ===== -->
+  <section id="intro">
+    <div class="card">
+      <div class="imgbox">
+        <img src="img1.jpg" alt="Studio del copista a Lipsia, 1750">
+      </div>
+      <h2>Lipsia, 1750</h2>
+      <p>Sei nello studio di un anziano copista, collaboratore di <b>Johann Sebastian Bach</b>. Il grande compositore è appena morto. Con lui sembra svanita l'ultima pagina de <i>L'Arte della Fuga</i>…</p>
+      <p class="dim">Il copista ha lasciato cinque enigmi per proteggere il manoscritto. Tu e il tuo gruppo avete <b>60 minuti</b> per ricomporre il codice e aprire lo scrigno. Leggete bene ogni indizio: la musica sa parlare a chi ascolta.</p>
+      <div class="row">
+        <button class="btn" id="btnBegin">🔑 Inizia l'esplorazione</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== APP PRINCIPALE ===== -->
+  <section id="app" class="hidden">
+
+    <!-- Barra progressi + frammenti -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px">
+        <div><span class="pill" id="tappaLabel">Tappa 1 di 5</span><span class="pill" id="timerLabel">Tempo: 60:00</span></div>
+        <div class="frag" id="fragBar">
+          <span class="locked" data-frag="sdg">?</span>
+          <span class="locked" data-frag="1">?</span>
+          <span class="locked" data-frag="6">?</span>
+          <span class="locked" data-frag="8">?</span>
+          <span class="locked" data-frag="5">?</span>
+        </div>
+      </div>
+      <div class="bar"><div id="progress"></div></div>
+    </div>
+
+    <!-- ============ TAPPA 1 ============ -->
+    <div class="card tappa attiva" id="t1">
+      <h2>🧩 Tappa 1 — Il Motivo Segreto</h2>
+      <div class="imgbox">
+        <img src="img2.jpg" alt="Spartito con le note B A C H">
+      </div>
+      <p>Un leggio con uno spartito incompleto. Sopra, quattro targhette: <b>B</b> · <b>A</b> · <b>C</b> · <b>H</b>. Un lucchetto a 4 lettere chiude un cassetto.</p>
+      <p class="dim"><i>“Il mio nome è la mia musica. In terra tedesca, quattro note mi chiamano. La prima è il mio cognome che inizia, l'ultima è il Si che non teme il bemolle. Trova le quattro lettere e il cassetto si aprirà.”</i></p>
+      <div class="row">
+        <input type="text" id="in1" maxlength="4" placeholder="????" autocomplete="off">
+        <button class="btn" data-check="1">Apri il cassetto</button>
+      </div>
+      <div class="msg" id="m1"></div>
+
+      <!-- sotto-enigma S.D.G. -->
+      <div id="sdgBox" class="hidden" style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px">
+        <p>Dentro il cassetto: una firma misteriosa. <b>“La sigla con cui Bach chiudeva le sue opere sacre.”</b> Digita la sigla per attivare il percorso.</p>
+        <div class="row">
+          <input type="text" id="inSdg" maxlength="8" placeholder="?.?.?." autocomplete="off">
+          <button class="btn" data-check="sdg">Attiva</button>
+        </div>
+        <div class="msg" id="mSdg"></div>
+      </div>
+    </div>
+
+    <!-- ============ TAPPA 2 ============ -->
+    <div class="card tappa" id="t2">
+      <h2>🧩 Tappa 2 — La Città del Cantore</h2>
+      <div class="grid">
+        <div class="imgbox">
+          <img src="img3.jpg" alt="Mappa antica della Sassonia con Lipsia e Thomaskirche">
+        </div>
+        <div class="imgbox">
+          <img src="img4.jpg" alt="Organo a canne con registri numerati">
+        </div>
+      </div>
+      <p>Una mappa antica e un piccolo organo a canne con <b>quattro manopole dei registri</b> colorate e numerate. Bach fu <i>Thomaskantor</i> in una città della Sassonia.</p>
+      <p class="dim"><i>“La cantata è la numero 4. Il registro che suona è il 7. La città ha 2 sillabe. La chiesa ne ha 1. Tira i registri nell'ordine giusto.”</i></p>
+      <div class="row">
+        <input type="text" id="in2" maxlength="4" placeholder="____" autocomplete="off">
+        <button class="btn" data-check="2">Tira i registri</button>
+      </div>
+      <div class="msg" id="m2"></div>
+    </div>
+
+    <!-- ============ TAPPA 3 ============ -->
+    <div class="card tappa" id="t3">
+      <h2>🧩 Tappa 3 — Il Re si Alza</h2>
+      <div class="imgbox">
+        <img src="img5.jpg" alt="Locandina settecentesca del Messiah a Londra">
+      </div>
+      <p>Una poltrona, una locandina del <i>Messiah</i> e una mappa di Londra (Covent Garden / King's Theatre).</p>
+      <p class="dim"><i>“Quando il coro più famoso del mondo risuonò a Londra, il re si alzò in piedi. Nessuno sapeva perché, ma tutti lo imitarono. Per aprire la scatola, fai come il re: premi il pulsante e resta in piedi finché la musica non tace.”</i></p>
+      <p class="dim">Simulazione: premi e <b>tieni premuto</b> il pulsante per 5 secondi.</p>
+      <div class="row">
+        <button class="btn" id="btnHold" style="min-width:220px">👑 Alzati con il re (tieni premuto)</button>
+      </div>
+      <div class="msg" id="m3"></div>
+    </div>
+
+    <!-- ============ TAPPA 4 ============ -->
+    <div class="card tappa" id="t4">
+      <h2>🧩 Tappa 4 — Acqua e Fuoco</h2>
+      <div class="imgbox">
+        <img src="img6.jpg" alt="Il Tamigi e i fuochi d'artificio barocchi">
+      </div>
+      <p>Due contenitori: <b>Acqua</b> (Musica sull'Acqua) e <b>Fuoco</b> (Musica per i Reali Fuochi d'Artificio). Smista le tessere nella colonna giusta. Attenzione: alcune sono distrattori legati al teatro e agli oratori! L'impresario Handel ti ricompenserà.</p>
+      
+      <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:15px;">
+        <div class="bin" id="bin-acqua" style="flex:1; min-width:200px;" ondrop="drop(event, 'acqua')" ondragover="allowDrop(event)" ondragleave="leave(event)">
+          <h3 style="color:#4a90e2; margin-top:0;">🌊 Acqua (Water Music)</h3>
+          <div id="content-acqua"></div>
+        </div>
+        <div class="bin" id="bin-fuoco" style="flex:1; min-width:200px;" ondrop="drop(event, 'fuoco')" ondragover="allowDrop(event)" ondragleave="leave(event)">
+          <h3 style="color:#e05a3a; margin-top:0;">🔥 Fuoco (Royal Fireworks)</h3>
+          <div id="content-fuoco"></div>
+        </div>
+        <div class="bin" id="bin-teatro" style="flex:1; min-width:200px;" ondrop="drop(event, 'teatro')" ondragover="allowDrop(event)" ondragleave="leave(event)">
+          <h3 style="color:#9a917c; margin-top:0;">🎭 Teatro / Oratorio</h3>
+          <div id="content-teatro"></div>
+        </div>
+      </div>
+      
+      <div style="margin-top:15px; text-align:center;">
+        <div id="tessere-pool" style="display:flex; flex-wrap:wrap; justify-content:center; min-height:50px;">
+          <!-- Le tessere verranno generate via JS -->
+        </div>
+      </div>
+      <div class="msg" id="m4" style="text-align:center;"></div>
+    </div>
+
+    <!-- ============ TAPPA 5 ============ -->
+    <div class="card tappa" id="t5">
+      <h2>🧩 Tappa 5 — La Scienza della Musica</h2>
+      <div class="grid">
+        <div class="imgbox">
+          <img src="img7.jpg" alt="Lucidi sovrapposti con linee melodiche">
+        </div>
+        <div class="imgbox">
+          <img src="img8.jpg" alt="Clavicembalo con tasti numerati">
+        </div>
+      </div>
+      <p><b>Passo 1 — Contrappunto:</b> sovrapponi i due lucidi. Quale parola appare?</p>
+      <div class="row">
+        <input type="text" id="in5a" maxlength="6" placeholder="?????" autocomplete="off">
+        <button class="btn" data-check="5a">Verifica</button>
+      </div>
+      <div class="msg" id="m5a"></div>
+
+      <div id="bassoBox" class="hidden" style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px">
+        <p><b>Passo 2 — Basso Continuo:</b> leggi i numeri sotto le note: <b>5 · 3 · 1 · 6 · 2 · 4</b>. Premi i tasti del clavicembalo in questo ordine.</p>
+        <div class="keys" id="keys"></div>
+        <div class="seq" id="seq5"></div>
+        <div class="msg" id="m5b"></div>
+      </div>
+
+      <div id="ciacconaBox" class="hidden" style="margin-top:14px; border-top:1px solid var(--border); padding-top:14px">
+        <p><b>Passo 3 — Ciaccona / Canone:</b> il basso ostinato si ripete con un pattern <b>3-3-2</b>. Batti il ritmo col pulsante: premi 3 volte, poi 3, poi 2, rispettando le pause.</p>
+        <div class="row">
+          <button class="btn" id="btnBeat">🥁 Batti</button>
+          <span class="dim" id="beatInfo">Battute totali: 0 / 8</span>
+        </div>
+        <div class="msg" id="m5c"></div>
+      </div>
+    </div>
+
+    <!-- ============ FINALE ============ -->
+    <div class="card tappa" id="t6">
+      <h2>🏁 Finale — L'Anno dei Miracoli</h2>
+      <div class="imgbox">
+        <img src="img9.jpg" alt="Scrigno antico con lucchetto a 4 cifre">
+      </div>
+      <p>Hai raccolto tutti i frammenti. Un ultimo biglietto:</p>
+      <p class="dim"><i>“Non è un numero qualsiasi: è l'anno in cui nacquero Bach, Handel e Scarlatti. È l'anno dei miracoli. Digita il codice e lo scrigno si aprirà.”</i></p>
+      <p>Frammenti raccolti: <b id="fragList">—</b></p>
+      <div class="row">
+        <input type="text" id="inFinal" maxlength="4" placeholder="????" autocomplete="off">
+        <button class="btn" data-check="final">Apri lo scrigno</button>
+      </div>
+      <div class="msg" id="mFinal"></div>
+    </div>
+
+    <!-- ============ VITTORIA ============ -->
+    <div class="card hidden" id="vittoria">
+      <div class="imgbox">
+        <img src="img10.jpg" alt="Bach, Handel e il 1685">
+      </div>
+      <h2>🎉 L'Accordo Perduto è Ritrovato!</h2>
+      <p>Lo scrigno si apre. Dentro, l'ultima pagina de <i>L'Arte della Fuga</i> e un messaggio:</p>
+      <div class="solutions">
+        <p><i>“Soli Deo Gloria. La musica non muore: si intreccia, si insegue, si ripete. Chi sa ascoltare, troverà sempre la via d'uscita.”</i></p>
+        <p class="dim">— J.S. Bach & G.F. Handel, 1685, l'anno dei miracoli.</p>
+      </div>
+      <p class="center" style="margin-top:16px"><b>Tempo impiegato: <span id="finalTime">—</span></b></p>
+      <div class="row center" style="justify-content:center">
+        <button class="btn" onclick="location.reload()">🔄 Nuova partita</button>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<!-- ===== MODALITÀ DOCENTE ===== -->
+<div class="locked-overlay hidden" id="teacherOverlay">
+  <div class="card" style="max-width:760px; text-align:left; max-height:85vh; overflow:auto">
+    <div style="display:flex; justify-content:space-between; align-items:center">
+      <h2>🎓 Modalità Docente — Soluzioni</h2>
+      <button class="btn small" id="btnCloseTeacher">✕ Chiudi</button>
+    </div>
+    <div class="solutions">
+      <h3>Tappa 1 — B-A-C-H + S.D.G.</h3>
+      <ul>
+        <li>Codice lucchetto: <b>BACH</b> (notazione tedesca: Si♭, La, Do, Si♮).</li>
+        <li>Sigla: <b>SDG</b> (Soli Deo Gloria - si può digitare anche con i punti).</li>
+        <li>Frammento ottenuto: <b>S.D.G.</b> (parola-ponte).</li>
+      </ul>
+      <h3>Tappa 2 — La Città del Cantore</h3>
+      <ul>
+        <li>Sequenza registri: <b>4721</b> (cantata n.4, registro 7, Lipsia 2 sillabe, chiesa 1).</li>
+        <li>Frammento: <b>1</b>.</li>
+      </ul>
+      <h3>Tappa 3 — Il Re si Alza</h3>
+      <ul>
+        <li>Tenere premuto il pulsante 5 secondi (simula l'alzarsi in piedi durante l'Hallelujah).</li>
+        <li>Frammento: <b>6</b>.</li>
+      </ul>
+      <h3>Tappa 4 — Acqua e Fuoco</h3>
+      <ul>
+        <li>Acqua: Tamigi, Barca Reale, Water Music.</li>
+        <li>Fuoco: Pace, Fuochi d'Artificio, Royal Fireworks.</li>
+        <li>Teatro/Oratorio: Messiah, Impresario, Covent Garden.</li>
+        <li>Frammento: <b>8</b>.</li>
+      </ul>
+      <h3>Tappa 5 — La Scienza della Musica</h3>
+      <ul>
+        <li>Parola dai lucidi: <b>FUGA</b>.</li>
+        <li>Basso continuo: tasti <b>531624</b>.</li>
+        <li>Ciaccona: premere il pulsante per un totale di 8 volte (3-3-2).</li>
+        <li>Frammento: <b>5</b>.</li>
+      </ul>
+      <h3>Finale — L'Anno dei Miracoli</h3>
+      <ul>
+        <li>Codice scrigno: <b>1685</b> (anno di nascita di Bach, Handel, D. Scarlatti).</li>
+      </ul>
+      <h3>Note didattiche</h3>
+      <ul>
+        <li>Durata consigliata: 60 minuti. Timer avviabile dal pulsante ▶ in alto a destra.</li>
+        <li>Adatto alla seconda media: nessuna competenza musicale pregressa richiesta; tutti gli enigmi sono deducibili dagli indizi a schermo.</li>
+        <li>Obiettivi: conoscere Bach e Handel, il Barocco, l'anno 1685; lessico musicale di base; collaborazione e problem solving.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<footer>Escape Room didattica — “Il Mistero del 1685” · Bach & Handel · per la scuola secondaria di I grado</footer>
+
+<script>
+/* ==========================================================
+   STATO DI GIOCO
+   ========================================================== */
+const state = {
+  started:false, paused:false, finished:false,
+  timeLeft:60*60, // secondi
+  maxTappa:1,
+  frags:{sdg:false, '1':false, '6':false, '8':false, '5':false},
+  startTime:null,
+  bassoSeq:[], targetBasso:[5,3,1,6,2,4],
+  beatCount:0, holdTimeout:null
+};
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+/* ==========================================================
+   TIMER
+   ========================================================== */
+let tickHandle=null;
+function fmt(sec){
+  const m=Math.floor(sec/60), s=sec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function renderTimer(){
+  const t=fmt(state.timeLeft);
+  $('#timer').textContent=t;
+  const tl=$('#timerLabel'); if(tl) tl.textContent='Tempo: '+t;
+  $('#timer').classList.toggle('warn', state.timeLeft<=300 && state.started && !state.finished);
+}
+function startTimer(){
+  if(state.started || state.finished) return;
+  state.started=true; state.startTime=Date.now();
+  $('#btnStart').disabled=true; $('#btnPause').disabled=false;
+  tickHandle=setInterval(()=>{
+    if(state.paused||state.finished) return;
+    state.timeLeft--;
+    renderTimer();
+    if(state.timeLeft<=0){ clearInterval(tickHandle); timeUp(); }
+  },1000);
+  renderTimer();
+}
+function togglePause(){
+  if(!state.started||state.finished) return;
+  state.paused=!state.paused;
+  $('#btnPause').textContent = state.paused?'▶ Riprendi':'⏸ Pausa';
+}
+function timeUp(){
+  if(state.finished) return;
+  state.finished=true; clearInterval(tickHandle);
+  $('#timer').textContent='00:00';
+  const ov=document.createElement('div');
+  ov.className='locked-overlay';
+  ov.innerHTML=`<div class="card center"><h2>⏳ Tempo scaduto!</h2>
+    <p>Il manoscritto è ancora al sicuro… ma il copista è tornato.</p>
+    <button class="btn" onclick="location.reload()">🔄 Riprova</button></div>`;
+  document.body.appendChild(ov);
+}
+$('#btnStart').onclick=startTimer;
+$('#btnPause').onclick=togglePause;
+renderTimer();
+
+/* ==========================================================
+   NAVIGAZIONE TAPPE
+   ========================================================== */
+function unlockTappa(n){
+  if(n>state.maxTappa){
+    state.maxTappa=n;
+    renderTappe();
+  }
+}
+function renderTappe(){
+  $$('.tappa').forEach(el=>{
+    const n=parseInt(el.id.replace('t',''));
+    const attiva = n<=state.maxTappa;
+    el.classList.toggle('attiva', attiva);
+  });
+  const done=Object.values(state.frags).filter(Boolean).length;
+  $('#progress').style.width=(done/5*100)+'%';
+  $$('#fragBar span').forEach(sp=>{
+    const k=sp.dataset.frag;
+    if(state.frags[k]){ sp.textContent = k==='sdg'?'S.D.G.':k; sp.classList.remove('locked'); }
+    else { sp.textContent='?'; sp.classList.add('locked'); }
+  });
+  if(state.frags.sdg && state.frags['1'] && state.frags['6'] && state.frags['8'] && state.frags['5']){
+    unlockTappa(6);
+  }
+  // Aggiorna frammenti nel finale
+  $('#fragList').textContent = Object.keys(state.frags).filter(k=>state.frags[k]).join(' · ');
+}
+
+/* ==========================================================
+   GESTIONE INPUT E CHECK
+   ========================================================== */
+$$('.btn[data-check]').forEach(btn=>{
+  btn.onclick = (e) => {
+    const type = e.target.dataset.check;
+    if(type==='1') check1();
+    if(type==='sdg') checkSdg();
+    if(type==='2') check2();
+    if(type==='5a') check5a();
+    if(type==='final') checkFinal();
+  };
+});
+
+/* Tappa 1 */
+function check1(){
+  const v=$('#in1').value.trim().toUpperCase();
+  if(v==='BACH'){
+    $('#m1').textContent='✔ Il cassetto si apre! Dentro, una firma misteriosa…';
+    $('#m1').className='msg ok';
+    $('#in1').disabled=true;
+    $('#sdgBox').classList.remove('hidden');
+    document.querySelector('[data-check="1"]').disabled = true;
+  } else {
+    $('#m1').textContent='✘ Non è la sequenza giusta. Ricorda: quattro note, quattro lettere, in terra tedesca.';
+    $('#m1').className='msg ko';
+  }
+}
+function checkSdg(){
+  const v=$('#inSdg').value.trim().toUpperCase().replace(/[^A-Z]/g,'');
+  if(v==='SDG'){
+    $('#mSdg').textContent='✔ Parola-ponte attivata: Soli Deo Gloria!';
+    $('#mSdg').className='msg ok';
+    state.frags.sdg=true;
+    $('#inSdg').disabled=true;
+    document.querySelector('[data-check="sdg"]').disabled = true;
+    unlockTappa(2);
+    renderTappe();
+  } else {
+    $('#mSdg').textContent='✘ La sigla non è corretta. Sono tre lettere puntate.';
+    $('#mSdg').className='msg ko';
+  }
+}
+
+/* Tappa 2 */
+function check2(){
+  const v=$('#in2').value.trim();
+  if(v==='4721'){
+    $('#m2').textContent='✔ I registri si muovono, il comparto si apre. Ecco il frammento!';
+    $('#m2').className='msg ok';
+    state.frags['1']=true;
+    $('#in2').disabled=true;
+    document.querySelector('[data-check="2"]').disabled = true;
+    unlockTappa(3);
+    renderTappe();
+  } else {
+    $('#m2').textContent='✘ La sequenza non è corretta. Rileggi i numeri nell\'indizio.';
+    $('#m2').className='msg ko';
+  }
+}
+
+/* Tappa 3 - Hold Button */
+const btnHold = $('#
